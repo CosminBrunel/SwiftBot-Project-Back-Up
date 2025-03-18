@@ -1,0 +1,330 @@
+import swiftbot.*;
+import java.util.Arrays;
+import java.io.IOException;
+import java.util.Scanner;
+import java.util.InputMismatchException;
+
+public class CustomGameClass
+{
+    private static SwiftBotAPI swiftBot;
+
+    // Constructor for an instance of SwiftBotAPI.
+    public CustomGameClass(SwiftBotAPI swiftBot)
+    {
+        this.swiftBot = swiftBot;
+    }
+
+    public static void CustomModeMenu()
+    {
+    	Scanner scanner = new Scanner(System.in);
+    	
+    	//Colour values for UI text output.
+    	String redColour = "\u001B[31m";
+        String whiteColour = "\u001B[0m";
+        String greenColour = "\u001B[32m";
+        String blueColour = "\u001B[34m";
+        String cyanColour = "\u001B[36m";
+        String purpleColour = "\u001B[35m";
+        String yellowColour = "\u001B[33m";
+        
+        //Creating instances of every needed class.
+        RandomizeColoursClass DefaultMode = new RandomizeColoursClass();
+        AssignColourNameClass NamedColour = new AssignColourNameClass();
+        TakePictureClass TakenPicture = new TakePictureClass(swiftBot);
+        
+        int Round = 1;
+        int PlayerScore = 0;
+        int ComputerScore = 0;
+        int Health = 0;  
+        int ChosenLength = 4;
+        
+        boolean ContinuePlaying = true;
+        
+        while (ContinuePlaying == true)
+        {
+        	boolean ValidInput = false;
+            
+            // Get the desired length of the array from the user. Loops until valid input is obtained.
+            while (ValidInput == false)
+            {
+            	try
+                {
+            		System.out.println(greenColour + "How many colours would you like the sequence to have (between 3 and 6): "+ whiteColour);
+                    ChosenLength = scanner.nextInt();
+                    scanner.nextLine();
+
+                    // Error validation.
+                    if (ChosenLength >= 3 && ChosenLength <= 6)
+                    {
+                    	ValidInput = true;
+                    }
+                    else
+                    {
+                        System.out.println(redColour + "Invalid input. Please enter a number between 2 and 6." + whiteColour);
+                    }
+                }
+                catch (InputMismatchException e)
+                {
+                    System.out.println(redColour + "Invalid input. Please enter a valid number." + whiteColour);
+                    scanner.nextLine();
+                }
+            }
+
+            System.out.println(greenColour + "How many guesses would you like to have: " + whiteColour);
+            int numGuesses = scanner.nextInt();
+            scanner.nextLine();
+            
+        	//UI display for when a new game is started.
+        	System.out.println(greenColour + "\t   Shuffling Colours..." + whiteColour);
+        	System.out.println("\n    |********************************|"
+                       	 	 + "\n    |Please show your chosen card to |"
+                       	 	 + "\n    |the camera while the white      |"
+                       	 	 + "\n    |lights are on. The SwiftBot will|"
+                       	 	 + "\n    |light up green to indicate when |"
+                       	 	 + "\n    |your card has been scanned!     |"
+                       	 	 + "\n    |********************************|");
+        
+        	//Making a randomised, non repeating, sequence of 4 colours.
+        	String[] RandomizedSequence = DefaultMode.RandomizeColours(ChosenLength);
+        	System.out.println("Randomized list of colours: " + Arrays.toString(RandomizedSequence));
+        
+        	//Creating the arrays that store the user's input and another one that stores the result in form of "+" and "-".
+        	String[] GuessArray = new String[ChosenLength];
+        	String[] Result = new String[ChosenLength];
+        
+        	String GuessChecker = "Incorrect";
+
+        	try
+        	{
+        		for (int Guesses = (numGuesses - 1); Guesses >= 0; Guesses--)
+        		{   		
+        			// Filling the result array with empty strings so no errors occur.
+        			Arrays.fill(Result, " ");
+            
+        			for (int i = 0; i < ChosenLength; i++)
+        			{
+        				//Taking picture with camera and storing it.
+        				TakenPicture.UseCamera();
+                
+        				//Swiftbot flashes green when a picture was successfully taken.
+        				int[] colourToLightUp = {0, 0, 255};
+        				swiftBot.fillUnderlights(colourToLightUp);
+        				Thread.sleep(800);
+        				swiftBot.disableUnderlights();
+                
+        				//Find taken picture using file path and calculate average RGB value of it.
+        				String path = "/home/pi/Documents/InputImage.png";
+        				int[] PicColour = CalcImageRGBValClass.AverageColorCalculator(path);
+                
+        				//Convert the RGB value to a string name using MSE to find closest value.
+        				String ColorName = NamedColour.RGBToName(PicColour[0], PicColour[1], PicColour[2]);
+                
+        				//Fill array that stores user's input 1 by 1 with every picture taken.
+        				GuessArray[i] = ColorName;
+                
+        				//Compare the randomised sequence array and the user's input array.
+        				CompareArraysClass.CompareArrays(GuessArray, RandomizedSequence, Result);
+        			}
+
+        			// Sort the elements of the result array alphabetically so all "+" display before all "-".
+        			Arrays.sort(Result);
+
+        			// Convert the sorted array to a string and print it.
+        			String SortedResult = String.join("", Result);
+        			String ResultWithoutSpace = SortedResult.trim();
+        			
+        			
+        			//Calculating Health of the player.
+        			Health = Guesses + RandomizedSequence.length + 6; 
+        			
+        			
+        			//Makes a string version of the int "Guesses" and int "Round" and adds a whitespace at the end of them
+        			//so the menu does not look out of place when their value is below 10
+        			String GuessesFormatted = String.valueOf(Guesses);  			
+        			if (Guesses < 10)
+        			{
+        				GuessesFormatted = GuessesFormatted + " ";
+        			}
+        			
+        			String RoundFormatted = String.valueOf(Round);  			
+        			if (Round < 10)
+        			{
+        				RoundFormatted = RoundFormatted + " ";
+        			}
+        			
+        			if (ResultWithoutSpace.matches("\\++") && ResultWithoutSpace.length() == GuessArray.length)
+        			{
+        				PlayerScore++;           		
+        				GuessChecker = "Correct";
+            		
+        				System.out.println("\n\t  " + cyanColour + "Correct colour and location: +" + whiteColour);
+        				System.out.println("\t" + yellowColour + "Correct colour but not location: -" + whiteColour);
+        				System.out.println("    |*****************************************|\n    |Guess " + greenColour + GuessChecker + whiteColour +"            "
+        						       	   + "Guesses Left: " + cyanColour + GuessesFormatted + whiteColour + "|"
+        						       	   + "\n    |Health:" + redColour + Health + whiteColour + "\t      Result:\t     Round: " + blueColour + RoundFormatted + whiteColour+ "|"
+        						       	   + "\n    |\t\t\t" + greenColour + SortedResult + whiteColour+ "\t\t      |"
+        						       	   + "\n    |*****************************************|");
+        				System.out.println(" Your entered sequence was: " + Arrays.toString(GuessArray));
+            		
+        				System.out.println(redColour + "\n\t\t     Game over!" + whiteColour);
+        				System.out.println("\n\t\t The player wins!"
+            						   	 + "\n\t      Player: " + greenColour + PlayerScore + whiteColour + "    Computer: " + ComputerScore);
+            		
+        				// Exit the loop if the correct sequence is guessed and adds 1 to round after the round is over.
+        				Round++;
+        				break;
+        			}
+
+        			if (Guesses == 0 && ((!ResultWithoutSpace.matches("\\++")) || (ResultWithoutSpace.matches("\\++") && ResultWithoutSpace.length() != GuessArray.length) || (!ResultWithoutSpace.matches("\\++") && ResultWithoutSpace.length() != GuessArray.length)))
+        			{
+        				ComputerScore++;              	
+                	
+        				System.out.println("\n\t  " + cyanColour + "Correct colour and location: +" + whiteColour);
+        				System.out.println("\t" + yellowColour + "Correct colour but not location: -" + whiteColour);
+        				System.out.println("    |*****************************************|\n    |Guess " + redColour + GuessChecker + whiteColour +"          "
+        							   	   + "Guesses Left: " + redColour + GuessesFormatted + whiteColour + "|"
+        							   	   + "\n    |Health:" + redColour + Health + whiteColour + "\t      Result:\t     Round: " + blueColour + RoundFormatted + whiteColour+ "|"
+        							   	   + "\n    |\t\t\t" + redColour + SortedResult + whiteColour + "\t\t      |"
+        							   	   + "\n    |*****************************************|");
+        				System.out.println(" Your entered sequence was: " + Arrays.toString(GuessArray));
+                	
+        				System.out.println(redColour + "\n\t\t     Game over!" + whiteColour
+                    				   	 + "\n   The sequence was: " + Arrays.toString(RandomizedSequence));
+        				System.out.println("\n\t\t The Computer wins!"
+        								 + "\n\t      Player: " + PlayerScore + "    Computer: " + greenColour + ComputerScore);
+                    
+        				// Exit the loop if the user runs out of guesses and adds 1 to round after the round is over.
+        				Round++;
+        				break;
+        			}
+                
+        			//Loop continues if the guesses havent reached 0 or player hasnt guessed correctly.
+        			else
+        			{
+        				System.out.println("\n\t  " + cyanColour + "Correct colour and location: +" + whiteColour);
+        				System.out.println("\t" + yellowColour + "Correct colour but not location: -" + whiteColour);
+        				System.out.println("    |*****************************************|\n    |Guess " + redColour + GuessChecker + whiteColour +"          "
+        							   	   + "Guesses Left: " + cyanColour + GuessesFormatted + whiteColour + "|"
+        							   	   + "\n    |Health:" + redColour + Health + whiteColour + "\t      Result:\t     Round: " + blueColour + RoundFormatted + whiteColour+ "|"
+        							   	   + "\n    |\t\t\t" + redColour + SortedResult + whiteColour + "\t\t      |"
+        							   	   + "\n    |*****************************************|");
+        				System.out.println(" Your entered sequence was: " + Arrays.toString(GuessArray));
+        			}
+
+
+        			// Clear the arrays for the next attempt
+        			Arrays.fill(GuessArray, null);
+        			Arrays.fill(Result, " ");
+                
+        			System.out.println(greenColour + "\n Press Y to scan your next sequence of colours!" + whiteColour);
+        			
+        			try
+        			{
+                        long[] endtime = {System.currentTimeMillis() + 100_000};
+
+                        swiftBot.enableButton(Button.Y, () ->
+                        {
+                            System.out.println(" ");
+                            swiftBot.disableAllButtons();
+                            endtime[0] = System.currentTimeMillis() + 100;
+                        });
+
+                        while (System.currentTimeMillis() < endtime[0])
+                        {
+                            ; // This while loop does nothing for 10 seconds.
+                        }
+
+                        swiftBot.disableAllButtons(); // Turns off all buttons now that it's been 10 seconds.
+                    }
+        			
+        			catch (Exception e)
+        			{
+                        System.out.println(redColour + "ERROR occurred when setting up buttons." + whiteColour);
+                        e.printStackTrace();
+                        System.exit(5);
+                    }
+                }
+        		
+        		
+        		boolean[] MenuChoice = { false };
+        		
+        		while (MenuChoice[0] == false)
+                {
+        			System.out.println(blueColour + "\n\t\t   Keep playing?"
+                            + "\n\t\t   -------------" + whiteColour
+                            + cyanColour + "\n\t\t  (Y)" + whiteColour + "Yes"
+                            + redColour + "  (X)" + whiteColour + "Quit");
+
+                    System.out.print(greenColour + "\n\t\t      Choice: " + whiteColour);
+
+                    String[] Answer1 = {"Z"};
+
+                    try
+                    {
+                        long[] endtime = { System.currentTimeMillis() + 60_000 };
+                        
+                        swiftBot.enableButton(Button.Y, () ->
+                        {
+                            System.out.println("Y");
+                            Answer1[0] = "Y";
+                            swiftBot.disableAllButtons();
+                            endtime[0] = System.currentTimeMillis() + 100;
+                        });
+                        
+                        swiftBot.enableButton(Button.X, () ->
+                        {
+                            System.out.println("X");
+                            Answer1[0] = "X";
+                            swiftBot.disableAllButtons();
+                            endtime[0] = System.currentTimeMillis() + 100;
+                        });
+
+                        while (System.currentTimeMillis() < endtime[0])
+                        {
+                            ; // This while loop does nothing for 10 seconds.
+                        }
+
+                        swiftBot.disableAllButtons(); // Turns off all buttons now that it's been 60 seconds.
+                    }
+                    
+                    catch (Exception e)
+                    {
+                        System.out.println(redColour + "ERROR occurred when setting up buttons." + whiteColour);
+                        e.printStackTrace();
+                        System.exit(0);
+                    }
+                    
+                     
+          
+                    switch (Answer1[0])
+                    {
+                        case "Y":
+                            System.out.println(blueColour + "\n\t\tStarting Next round!" + whiteColour);
+                            ContinuePlaying = true;
+                            MenuChoice[0] = true;
+                            break;
+              
+                        case "X":
+                        	System.out.println("\n\t   Thank you for playing!");
+                            System.out.println(redColour + "\t     Quitting Program...");
+                            System.exit(0);
+
+                        case "Z":
+                            System.out.println("\n\t     No input detected!");
+                            System.out.println(redColour + "\t     Quitting Program...");
+                            
+                            System.exit(0);
+ 
+                        default:
+                            System.out.println(redColour + "  That is not a valid choice, please try again!" + whiteColour);
+                    } 
+                }
+            }
+        	
+        	catch (InterruptedException | IOException exception)
+        	{
+                exception.printStackTrace();
+        	}
+        }
+    }
+}
