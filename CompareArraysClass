@@ -1,23 +1,42 @@
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-public class RandomizeColoursClass
+public class CompareArraysClass
 {
-	private static String[] ColourList = {"Red", "Green", "Blue", "Yellow", "Orange", "Pink"};
-	
-	public String[] RandomizeColours(int length)
-	{
-	    List<String> RandomizedList = Arrays.asList(ColourList);
-	    Collections.shuffle(RandomizedList);
-
-	    //Make randomized colours list as long as the player chose. 4 if player is in Default mode.
-	    RandomizedList = RandomizedList.subList(0, length);
-
-	    //Turn list back to array and return it.
-	    String[] RandomizedColours = new String[length];
-	    RandomizedList.toArray(RandomizedColours);
-
-	    return RandomizedColours;
-	}
+	public static void CompareArrays(String[] UserInput, String[] RandomizedSequence, String[] Result)
+    {
+		//Looping through every element in the "UserInput" array.
+        for (int i = 0; i < UserInput.length; i++)
+        {
+            if (UserInput[i] != null && RandomizedSequence[i] != null)
+            {
+            	//Comparing the elements at the same point in "UserInput" and "RandomizedSequence" arrays
+            	//and if both values are the same set the corresponding location in the "Result" array to "+".
+                if (UserInput[i].equals(RandomizedSequence[i]))
+                {
+                	Result[i] = "+";
+                }
+                
+                
+                else
+                {
+                	//If values are not the same, loop through the "RandomizedSequence" array and check
+                	//if the current element in "UserInput" is present in "RandomizedSequence" in any position.
+                	//If there is a matching element somewhere in "RandomizedSequence", set the corresponding location
+                	//in the Result array to "-".
+                    for (int j = 0; j < RandomizedSequence.length; j++)
+                    {
+                        if (UserInput[i].equals(RandomizedSequence[j]) && Result[j] != null && !Result[j].equals("+"))
+                        {
+                        	Result[i] = "-";
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            //If either "UserInput" or "RandomizedSequence" has a null value at the current location, replace it with an empty string.
+            else
+            {
+            	Result[i] = " ";
+            }
+        }
+    }
 }
