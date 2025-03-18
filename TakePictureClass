@@ -1,0 +1,45 @@
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.Scanner;
+
+
+public class TakePictureClass
+{
+	private SwiftBotAPI swiftBot;
+
+    //Constructor to receive SwiftBotAPI instance.
+    public TakePictureClass(SwiftBotAPI swiftBot)
+    {
+        this.swiftBot = swiftBot;
+    }
+    
+	public void UseCamera() throws InterruptedException
+	{
+		swiftBot.fillButtonLights();
+		Thread.sleep(5000);
+		
+        try
+        {
+        	//Take 240x240 picture and store as "InputImage".
+            BufferedImage CapturedImage = swiftBot.takeStill(ImageSize.SQUARE_240x240);
+            
+            if(CapturedImage == null)
+            {            	
+                System.out.println("There is no image error!");
+                
+                swiftBot.disableButtonLights();
+                System.exit(5);
+            }
+            
+            else
+            {              
+                ImageIO.write(CapturedImage, "png", new File("/home/pi/Documents/InputImage.png"));
+                swiftBot.disableButtonLights();
+            }
+        }
+        catch (Exception e){
+            System.out.println("\nThe camera has had an error!");
+
+        }
+    }
+}
