@@ -1,0 +1,64 @@
+import java.util.ArrayList;
+
+public class AssignColourNameClass
+{
+    public ArrayList<ColourName> ListOfColours()
+    {
+    	//Creating an index of colour names and their RGB values.
+        ArrayList<ColourName> ColourList = new ArrayList<ColourName>();
+        ColourList.add(new ColourName("Red", 180, 0, 0));
+        ColourList.add(new ColourName("Green", 0, 255, 0));
+        ColourList.add(new ColourName("Blue", 0, 0, 255));
+        ColourList.add(new ColourName("Yellow", 180, 180, 0));
+        ColourList.add(new ColourName("Orange", 191, 70, 20));
+        ColourList.add(new ColourName("Pink", 180, 70, 150));
+        return ColourList;
+    }
+
+    //Using MSE to return closest colour name to RGB value given.
+    public String RGBToName(int R, int G, int B)
+    {
+        ArrayList<ColourName> ColourList = ListOfColours();
+        ColourName ClosestColour = null;
+        int PredictedVal = Integer.MAX_VALUE;
+        int ActualVal;
+        for (ColourName i : ColourList) {
+        	ActualVal = i.DifferenceCalc(R, G, B);
+            if (ActualVal < PredictedVal)
+            {
+            	PredictedVal = ActualVal;
+            	ClosestColour = i;
+            }
+        }
+        
+        return ClosestColour.GetName();
+    }
+
+
+    public class ColourName
+    {
+        public int R, G, B;
+        public String Name;
+        
+        //Constructor to initialise ColourName.
+        public ColourName(String Name, int R, int G, int B)
+        {
+            this.R = R;
+            this.G = G;
+            this.B = B;
+            this.Name = Name;
+        }
+        
+        // Getter to get the name of the color.
+        public String GetName()
+        {
+            return Name;
+        }
+
+        public int DifferenceCalc(int pixR, int pixG, int pixB)
+        {
+            return (int) (((pixR - R) * (pixR - R) + (pixG - G) * (pixG - G) + (pixB - B) * (pixB - B)) / 3);
+        }
+
+    }
+}
