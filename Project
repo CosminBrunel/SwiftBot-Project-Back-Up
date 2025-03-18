@@ -1,0 +1,168 @@
+import swiftbot.*;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.Scanner;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+public class Project
+{
+    static SwiftBotAPI swiftBot = new SwiftBotAPI();
+
+    public static void main(String[] args) throws InterruptedException
+    {
+        
+        //Colour values for UI text output.
+        String redColour = "\u001B[31m";
+        String whiteColour = "\u001B[0m";
+        String greenColour = "\u001B[32m";
+        String blueColour = "\u001B[34m";
+        String cyanColour = "\u001B[36m";
+        String purpleColour = "\u001B[35m";
+        
+        //UI display.
+        System.out.println("\t|**************************|");
+        System.out.print("\t|");
+        System.out.print(redColour + "\tMastermind" + whiteColour);
+        System.out.println("         |");
+        System.out.println("\t|\t----------         |");
+        System.out.print("\t|");
+        System.out.print(greenColour + "   The Codebreaker Game" + whiteColour);
+        System.out.println("   |\n\t|**************************|");
+        
+        DefaultGameClass DefaultGame = new DefaultGameClass(swiftBot);
+        CustomGameClass CustomGame = new CustomGameClass(swiftBot);
+        
+        boolean[] MenuChoice = { false };
+        
+        //Loop menu choice until a valid choice is entered.
+     // Loop menu choice until a valid choice is entered.
+        while (MenuChoice[0] == false)
+        {
+            System.out.println(blueColour + "\n\t\tChoose mode");
+            System.out.println("\t\t-----------");
+            System.out.print(cyanColour + "       (A)" + whiteColour);
+            System.out.print("Default");
+            System.out.print(purpleColour + "  (B)" + whiteColour);
+            System.out.print("Custom");
+            System.out.print(redColour + "  (X)" + whiteColour);
+            System.out.println("Quit");
+            System.out.print(greenColour + "\n\t\t Choice: " + whiteColour);
+
+            String[] Answer = {"Y"};
+
+            try
+            {
+                long[] endtime = { System.currentTimeMillis() + 10_000 };
+                
+                swiftBot.enableButton(Button.A, () ->
+                {
+                    System.out.println("A");
+                    Answer[0] = "A";
+                    swiftBot.disableAllButtons();
+                    endtime[0] = System.currentTimeMillis() + 100;
+                });
+
+                swiftBot.enableButton(Button.B, () ->
+                {
+                    System.out.println("B");
+                    Answer[0] = "B";
+                    swiftBot.disableAllButtons();
+                    endtime[0] = System.currentTimeMillis() + 100;
+                });
+
+                swiftBot.enableButton(Button.X, () ->
+                {
+                	System.out.println("X");
+                    Answer[0] = "X";
+                    swiftBot.disableAllButtons();
+                    endtime[0] = System.currentTimeMillis() + 100;
+                });
+
+                while (System.currentTimeMillis() < endtime[0])
+                {
+                    ;
+                }
+
+                swiftBot.disableAllButtons(); // Turns off all buttons now that it's been 60 seconds.
+            }
+            
+            catch (Exception e)
+            {
+                System.out.println(redColour + "ERROR occurred when setting up buttons." + whiteColour);
+                e.printStackTrace();
+                System.exit(0);
+            }
+            
+  
+            switch (Answer[0])
+            {
+                case "A":
+                    int[] colourToLightUp = {0, 255, 255};
+                    System.out.println(cyanColour + "\t  Default mode selected! Get ready!" + whiteColour);                
+                    
+                    //Swiftbot flashes cyan to show player chose Default mode.
+                    swiftBot.fillUnderlights(colourToLightUp);
+                    Thread.sleep(500);
+                    swiftBot.disableUnderlights();
+                    Thread.sleep(3000);
+                    
+                    //The Default game is initiated.
+                    DefaultGame.DefaultModeMenu();
+
+                    MenuChoice[0] = true;
+                    break;
+
+                    
+                case "B":
+                    int[] colourToLightUp2 = {230, 230, 0};
+                    System.out.println(purpleColour + "    Custom mode selected! Get Ready!" + whiteColour);
+                    
+                    //Swiftbot flashes purple to show player chose Custom mode.
+                    swiftBot.fillUnderlights(colourToLightUp2);
+                    Thread.sleep(500);
+                    swiftBot.disableUnderlights();
+                    Thread.sleep(3000);
+                    
+                    CustomGame.CustomModeMenu();
+                    
+                    MenuChoice[0] = true;
+                    break;
+
+                    
+                case "X":
+                    int[] colourToLightUp3 = {255, 0, 0};
+                    System.out.println("\n\t   Thank you for playing!");
+                    System.out.println(redColour + "\t     Quitting Program...");
+                    
+                    //Swiftbot flashes red to show player chose to exit program.
+                    swiftBot.fillUnderlights(colourToLightUp3);
+                    Thread.sleep(500);
+                    swiftBot.disableUnderlights();
+                    Thread.sleep(3000);
+                    
+                    System.exit(0);
+
+                    
+                case "Y":
+                    int[] colourToLightUp4 = {255, 0, 0};
+                    System.out.println("\n\t     No input detected!");
+                    System.out.println(redColour + "\t     Quitting Program...");
+                    
+                    //Swiftbot flashes red to show player chose to exit program.
+                    swiftBot.fillUnderlights(colourToLightUp4);
+                    Thread.sleep(500);
+                    swiftBot.disableUnderlights();
+                    
+                    System.exit(0);
+                    
+                    
+                    
+                default:
+                	System.out.println(redColour + "  That is not a valid choice, please try again!" + whiteColour);
+            } 
+        }
+    }
+}
