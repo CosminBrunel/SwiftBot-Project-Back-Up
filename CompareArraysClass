@@ -1,0 +1,23 @@
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+public class RandomizeColoursClass
+{
+	private static String[] ColourList = {"Red", "Green", "Blue", "Yellow", "Orange", "Pink"};
+	
+	public String[] RandomizeColours(int length)
+	{
+	    List<String> RandomizedList = Arrays.asList(ColourList);
+	    Collections.shuffle(RandomizedList);
+
+	    //Make randomized colours list as long as the player chose. 4 if player is in Default mode.
+	    RandomizedList = RandomizedList.subList(0, length);
+
+	    //Turn list back to array and return it.
+	    String[] RandomizedColours = new String[length];
+	    RandomizedList.toArray(RandomizedColours);
+
+	    return RandomizedColours;
+	}
+}
