@@ -1,0 +1,52 @@
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+
+public class CalcImageRGBValClass
+{
+	//Method to calculate the average RGB values of taken image via file path.
+	public static int[] AverageColorCalculator(String Path) throws IOException
+	{
+        File PictureFile = new File(Path);
+        
+        //Read the image using BufferedImage
+        BufferedImage TakenPicture = ImageIO.read(PictureFile);
+               
+        //Grabbing the width and height of the image.
+        int Width = TakenPicture.getWidth();
+        int Height = TakenPicture.getHeight();
+            
+        //Calculate the total number of pixels in the image and variables to store amount of red, blue and green pixels.
+        int TotalPixels = Width * Height;
+        int TotalRedPixels = 0;
+        int TotalGreenPixels = 0;
+        int TotalBluePixels = 0;
+               
+        //Looping through each pixel in the image until all of them have been passed through.
+        for (int YAxis = 0; YAxis < Height; YAxis++)
+        {
+            for (int XAxis = 0; XAxis < Width; XAxis++)
+            {
+                int RGBValue = TakenPicture.getRGB(XAxis, YAxis);
+                
+                //Collecting every red, green, and blue value and separating them from an overall RGB value.
+                int Red = (RGBValue >> 16) & 0xFF;
+                int Green = (RGBValue >> 8) & 0xFF;
+                int Blue = RGBValue & 0xFF;
+
+                TotalRedPixels += Red;
+                TotalGreenPixels += Green;
+                TotalBluePixels += Blue;
+            }
+        }
+        
+        //Calculating the average red, green and blue values.
+        int AverageRedPixels = TotalRedPixels / TotalPixels;
+        int AverageGreenPixels = TotalGreenPixels / TotalPixels;
+        int AverageBluePixels = TotalBluePixels / TotalPixels;
+        
+        //Returning an array containing the average RGB values.
+        return new int[]{AverageRedPixels, AverageGreenPixels, AverageBluePixels};
+    }
+}
